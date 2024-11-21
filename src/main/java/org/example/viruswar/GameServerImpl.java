@@ -71,8 +71,19 @@ public class GameServerImpl extends UnicastRemoteObject implements GameServer {
 
     @Override
     public void disconnectPlayer(ClientCallback callback) throws RemoteException {
-        Player player = players.remove(callback);
-        System.out.println("Игрок отключен: " + player);
+        if (players.containsKey(callback)) {
+            Player player = players.remove(callback);
+            System.out.println("Игрок отключен: " + player);
+
+            if (gameStart) {
+                for (Map.Entry<ClientCallback, Player> entry : players.entrySet()) {
+                    entry.getKey().notifyGameOver(true);
+                }
+                gameStart = false;
+            }
+        } else {
+            System.out.println("Игрок уже отключен или не подключен: " + callback);
+        }
     }
 
     private boolean hasAvailableMoves(Player player) {

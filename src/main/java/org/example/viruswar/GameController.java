@@ -116,26 +116,6 @@ public class GameController extends UnicastRemoteObject implements ClientCallbac
         }
     }
 
-    @Override
-    public void notifyOpponentMove(int x, int y) throws RemoteException {
-        Platform.runLater(() -> {
-            Pane cellPane = (Pane) gridPane.getChildren().get(x * SIZE_FIELD + y);
-            player.markOpponentCell(x, y);
-
-            if (player.getCell(x, y) == 2) {
-                drawRing(cellPane, Color.valueOf("#c1121f"));
-            } else if (player.getCell(x, y) == 4) {
-                cellPane.setStyle(cellPane.getStyle() + " -fx-background-color: #c1121f;");
-            }
-
-            if (player.isTurn()) {
-                startButton.setText("Ваш ход");
-            } else {
-                startButton.setText("Ход противника");
-            }
-        });
-    }
-
     private void drawCross(Pane cellPane, Color color) {
         double offset = SIZE_CELL * 0.2;
         double size = SIZE_CELL - offset * 2;
@@ -165,6 +145,26 @@ public class GameController extends UnicastRemoteObject implements ClientCallbac
     }
 
     @Override
+    public void notifyOpponentMove(int x, int y) throws RemoteException {
+        Platform.runLater(() -> {
+            Pane cellPane = (Pane) gridPane.getChildren().get(x * SIZE_FIELD + y);
+            player.markOpponentCell(x, y);
+
+            if (player.getCell(x, y) == 2) {
+                drawRing(cellPane, Color.valueOf("#c1121f"));
+            } else if (player.getCell(x, y) == 4) {
+                cellPane.setStyle(cellPane.getStyle() + " -fx-background-color: #c1121f;");
+            }
+
+            if (player.isTurn()) {
+                startButton.setText("Ваш ход");
+            } else {
+                startButton.setText("Ход противника");
+            }
+        });
+    }
+
+    @Override
     public void notifyConnect(boolean isTurn, boolean gameStart) throws RemoteException {
         Platform.runLater(() -> {
             if (gameStart) {
@@ -176,8 +176,8 @@ public class GameController extends UnicastRemoteObject implements ClientCallbac
                     System.out.println("Ваш ход");
                 } else {
                     gameField.setDisable(true);
-                    startButton.setText("Не ваш ход");
-                    System.out.println("Не ваш ход");
+                    startButton.setText("Ход противника");
+                    System.out.println("Ход противника");
                 }
             }
         });
@@ -217,5 +217,11 @@ public class GameController extends UnicastRemoteObject implements ClientCallbac
                 e.printStackTrace();
             }
         });
+    }
+
+    public void disconnectFromServer() throws RemoteException {
+        if (gameServer != null) {
+            gameServer.disconnectPlayer(this);
+        }
     }
 }
